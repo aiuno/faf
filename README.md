@@ -30,7 +30,7 @@ Create and go to the source code build directory:
 `mkdir faf/build && cd faf/build`
 
 Build the thing:
-`cmake .. && make`
+`cmake -DCMAKE_BUILD_TYPE=Release .. && make`
 
 Finally, install it:
 `sudo make install`
