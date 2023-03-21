@@ -16,8 +16,6 @@ With planned support for [FontSquirrel](https://fontsquirrel.com), as well as an
 
 Google fonts, as well as FontSquirrel both provide only fonts which are free for commercial use.
 
-Note that this might, but probably won't change in the future.
-
 #### How do i use this?
 
 Get build dependencies:
@@ -28,8 +26,8 @@ Get build dependencies:
 First clone the repository:
 `git clone https://github.com/aiuno/faf.git`
 
-Go to the source code build directory:
-`cd faf/build`
+Create and go to the source code build directory:
+`mkdir faf/build && cd faf/build`
 
 Build the thing:
 `cmake .. && make`
