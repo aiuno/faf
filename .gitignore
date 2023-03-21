@@ -1,0 +1,5 @@
+build/*
+build-release/*
+.vscode/
+.cache/
+src/external/
