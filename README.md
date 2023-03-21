@@ -1,4 +1,4 @@
-# faf - free amazing fonts
+# faf
 
 ### A tool to easily download fonts on Linux 🐧
 
