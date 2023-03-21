@@ -44,13 +44,26 @@ Usage:
     faf <operation> <options> [...]
 
 operations:
-    faf -S [fonts]                       Download font(s)
-    faf -R [fonts]                       Remove already installed font(s)
-    faf -Q [fonts]                       Search for font(s)
+    faf -S [fonts]                   Download font(s)
+    faf -R [fonts]                   Remove installed font(s)
+    faf -Q [fonts]                   Search for font(s)
 
 options:
-    Download:
-        --system                         Install fonts for all users
-        --ignore [regular/italic/bold]   Ignore a font variant
+    --system                         Install fonts for all user
+    --ignore <variant>(,variant)     Ignore a font variant
+    --attend <weight>(,<weight>)     Download "extra" font weights
+
+    extra weights:
+        thin                         (100)
+        extralight                   (200)
+        light                        (300)
+        medium                       (500)
+        semibold                     (600)
+        extrabold                    (800)
+        heavy                        (900)
+    variants:
+        regular
+        italic
+        bold
 ```
 
