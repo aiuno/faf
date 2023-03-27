@@ -1,4 +1,4 @@
-# faf - free amazing fonts
+# faf
 
 ### A tool to easily download fonts on Linux 🐧
 
@@ -16,8 +16,6 @@ With planned support for [FontSquirrel](https://fontsquirrel.com), as well as an
 
 Google fonts, as well as FontSquirrel both provide only fonts which are free for commercial use.
 
-Note that this might, but probably won't change in the future.
-
 #### How do i use this?
 
 Get build dependencies:
@@ -28,11 +26,11 @@ Get build dependencies:
 First clone the repository:
 `git clone https://github.com/aiuno/faf.git`
 
-Go to the source code build directory:
-`cd faf/build`
+Create and go to the source code build directory:
+`mkdir faf/build && cd faf/build`
 
 Build the thing:
-`cmake .. && make`
+`cmake -DCMAKE_BUILD_TYPE=Release .. && make`
 
 Finally, install it:
 `sudo make install`
@@ -46,13 +44,26 @@ Usage:
     faf <operation> <options> [...]
 
 operations:
-    faf -S [fonts]                       Download font(s)
-    faf -R [fonts]                       Remove already installed font(s)
-    faf -Q [fonts]                       Search for font(s)
+    faf -S [fonts]                   Download font(s)
+    faf -R [fonts]                   Remove installed font(s)
+    faf -Q [fonts]                   Search for font(s)
 
 options:
-    Download:
-        --system                         Install fonts for all users
-        --ignore [regular/italic/bold]   Ignore a font variant
+    --system                         Install fonts for all user
+    --ignore <variant>(,variant)     Ignore a font variant
+    --attend <weight>(,<weight>)     Download "extra" font weights
+
+    extra weights:
+        thin                         (100)
+        extralight                   (200)
+        light                        (300)
+        medium                       (500)
+        semibold                     (600)
+        extrabold                    (800)
+        heavy                        (900)
+    variants:
+        regular
+        italic
+        bold
 ```
 
