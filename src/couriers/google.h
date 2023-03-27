@@ -11,7 +11,7 @@ public:
 
   std::string get_api_key();
 
-  std::vector<font_props> search(std::vector<std::string> query);
+  std::vector<font_props> search(std::vector<std::string> query, bool is_search = false);
 
 private:
   std::string api_key;

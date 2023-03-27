@@ -146,8 +146,11 @@ std::vector<font_props> Google::search(std::vector<std::string> query) {
 
       std::transform(at.begin(), at.end(), at.begin(),
                      [](unsigned char c) { return std::tolower(c); });
-
-      if (at == font) {
+      
+      // FIXME: in the case of roboto-flex where there are no special weights
+      //        and only regular variant. The parser fails and shows "regular"
+      //        as a weight
+      if (at.find(font) == 0) {
         found = true;
         for (const auto &file : obj["files"].items()) {
           std::string weight;
