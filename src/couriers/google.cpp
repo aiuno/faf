@@ -83,7 +83,7 @@ size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmem
   return newLength;
 }
 
-std::vector<font_props> Google::search(std::vector<std::string> query) {
+std::vector<font_props> Google::search(std::vector<std::string> query, bool is_search) {
   indicators::show_console_cursor(false);
   indicators::ProgressSpinner spinner{
       indicators::option::PostfixText{"Searching..."},
