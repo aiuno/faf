@@ -38,11 +38,19 @@ bool Common::download_font(font_props font, bool system_wide) {
 
   std::filesystem::path install_dir;
 
+#if defined(__linux__)
   if (system_wide) {
     install_dir = std::string("/usr/share/fonts/") + font.name + "/";
   } else {
     install_dir = (homedir + "/.fonts/" + font.name + "/");
   }
+#elif defined(__APPLE__)
+  if (system_wide) {
+    install_dir = std::string("/Library/Fonts/") + font.name + "/";
+  } else {
+    install_dir = (homedir + "/Library/Fonts/" + font.name + "/");
+  }
+#endif // __linux__
 
   if (!std::filesystem::exists(install_dir)) {
     std::filesystem::create_directories(install_dir);
@@ -102,11 +110,19 @@ std::uintmax_t Common::remove_font_family(std::string font_name, bool system_wid
 
   std::string fp = "";
 
+#if defined(__linux__)
   if (system_wide) {
     fp = "/usr/share/fonts/" + font_name;
   } else {
     fp = std::string(homedir) + "/.fonts/" + font_name;
   }
+#elif defined(__APPLE__)
+  if (system_wide) {
+    fp = "/Library/Fonts/" + font_name;
+  } else {
+    fp = std::string(homedir) + "/Library/Fonts/" + font_name;
+  }
+#endif // __linux__
 
   return std::filesystem::remove_all(fp); // returns 0 (which is false) if nothing was deleted
 }
@@ -122,11 +138,19 @@ bool Common::remove_single_font(std::string font_name, std::string font_type, bo
   std::string fp = "";
 
   // FIXME: get file extensions "more smarter"
+#if defined(__linux__)
   if (system_wide) {
     fp = "/usr/share/fonts/" + font_name + "/" + font_name + "-" + font_type + ".ttf";
   } else {
     fp = std::string(homedir) + "/.fonts/" + font_name + "/" + font_name + "-" + font_type + ".ttf";
   }
+#elif defined(__APPLE__)
+  if (system_wide) {
+    fp = "/Library/Fonts/" + font_name + "/" + font_name + "-" + font_type + ".ttf";
+  } else {
+    fp = std::string(homedir) + "/Library/Fonts/" + font_name + "/" + font_name + "-" + font_type + ".ttf";
+  }
+#endif // __linux__
 
   return std::filesystem::remove(fp); 
 }

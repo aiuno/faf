@@ -1,6 +1,6 @@
 # faf
 
-### A tool to easily download fonts on Linux 🐧
+### A tool to easily download fonts on Linux 🐧 and MacOS 🍏
 
 Even though most if not all Linux distros have font installers.
 None of the ones i have seen download them for you.
@@ -22,6 +22,7 @@ Get build dependencies:
 
 - Arch/Manjaro:`# pacman -S gcc cmake`
 - Debian/Ubuntu:`# apt-get install cmake build-essential`
+- MacOS: `$ brew install cmake`
 
 First clone the repository:
 `git clone https://github.com/aiuno/faf.git`
