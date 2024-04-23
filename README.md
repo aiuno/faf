@@ -8,10 +8,6 @@ None of the ones i have seen download them for you.
 This tool makes is as easy as finding an open source font you want and typing:
 `faf -S [font name]`
 
-#### Currently supports Google Fonts
-
-With planned support for [FontSquirrel](https://fontsquirrel.com), as well as any other relevant font providers with relatively decent API's.
-
 #### All fonts downloaded with faf are FREE
 
 Google fonts, as well as FontSquirrel both provide only fonts which are free for commercial use.
@@ -50,7 +46,8 @@ operations:
     faf -Q [fonts]                   Search for font(s)
 
 options:
-    --system                         Install fonts for all user
+    -ng --no-google                  Do not use Google Fonts
+    --system                         Install fonts for all users
     --ignore <variant>(,variant)     Ignore a font variant
     --attend <weight>(,<weight>)     Download "extra" font weights
 

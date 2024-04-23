@@ -155,4 +155,16 @@ bool Common::remove_single_font(std::string font_name, std::string font_type, bo
   return std::filesystem::remove(fp); 
 }
 
+size_t Common::CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmemb,
+                                          std::string *s) {
+  size_t newLength = size * nmemb;
+  try {
+    s->append((char *)contents, newLength);
+  } catch (std::bad_alloc &e) {
+    // handle memory problem
+    return 0;
+  }
+  return newLength;
+}
+
 } // namespace faf

@@ -17,7 +17,7 @@ file(DOWNLOAD
     ${CMAKE_SOURCE_DIR}/external/p-ranav/indicators.hpp
 )
 
-add_executable(faf src/main.cpp src/util.cpp src/couriers/google.cpp src/couriers/common.cpp)
+add_executable(faf src/main.cpp src/util.cpp src/couriers/common.cpp src/couriers/google.cpp src/couriers/fontsquirrel.cpp)
 target_link_libraries(faf curl)
 
 install(TARGETS faf CONFIGURATIONS Release)

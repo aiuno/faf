@@ -18,7 +18,6 @@
 
 #include "../external/nlohmann/json.hpp"
 #include "../external/p-ranav/indicators.hpp"
-#include "common.h"
 #include "../util.h"
 
 namespace faf {
@@ -71,19 +70,7 @@ bool Google::add_api_key(std::filesystem::path api_key_file) {
   return true;
 }
 
-size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmemb,
-                                        std::string *s) {
-  size_t newLength = size * nmemb;
-  try {
-    s->append((char *)contents, newLength);
-  } catch (std::bad_alloc &e) {
-    // handle memory problem
-    return 0;
-  }
-  return newLength;
-}
-
-std::vector<font_props> Google::search(std::vector<std::string> query, bool is_search) {
+std::vector<font_props> Google::search(std::vector<std::string> query) {
   indicators::show_console_cursor(false);
   indicators::ProgressSpinner spinner{
       indicators::option::PostfixText{"Searching..."},
@@ -126,7 +113,7 @@ std::vector<font_props> Google::search(std::vector<std::string> query, bool is_s
     curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0L);
     curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYHOST, 0L);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION,
-                     CurlWrite_CallbackFunc_StdString);
+                     Common::CurlWrite_CallbackFunc_StdString);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &res);
 
     ret = curl_easy_perform(curl_handle);
@@ -218,7 +205,7 @@ std::vector<font_props> Google::search(std::vector<std::string> query, bool is_s
   indicators::show_console_cursor(true);
 
   for (const auto &font : error_fonts) {
-    std::cout << "\033[91mError: could not find font with the name '" << font
+    std::cout << "\033[91mError (Google): could not find font with the name '" << font
               << "'\n\033[0m";
   }
 

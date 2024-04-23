@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "couriers/common.h"
+#include "couriers/fontsquirrel.h"
 #include "couriers/google.h"
 #include "util.h"
 
@@ -23,7 +24,8 @@ void print_usage() {
             << "    faf -R [fonts]                   Remove installed font(s)\n"
             << "    faf -Q [fonts]                   Search for font(s)\n"
             << "\noptions:\n"
-            << "    --system                         Install fonts for all user\n"
+            << "    -ng --no-google                  Do not use Google Fonts\n"
+            << "    --system                         Install fonts for all users\n"
             << "    --ignore <variant>(,variant)     Ignore a font variant\n"
             << "    --attend <weight>(,<weight>)     Download \"extra\" font weights\n"
             << "\n"
@@ -60,8 +62,10 @@ int main(int argc, char *argv[]) {
   // TODO: https://www.fontsquirrel.com/blog/2010/12/the-font-squirrel-api
   // TODO: if (config.google.enabled)
   faf::Google gfonts;
+  faf::FontSquirrel fontsquirrel;
 
   bool system_wide = false;
+  bool no_google = false;
   bool ignore_italic = false;
   bool ignore_regular = false;
   bool ignore_bold = false;
@@ -93,6 +97,14 @@ int main(int argc, char *argv[]) {
         }
       } else {
         std::cout << "--system supplied more than once. This is not needed" << std::endl;
+      }
+    } else if (std::string(argv[i]).compare("--no-google") == 0 ||
+               std::string(argv[i]).compare("-ng") == 0) {
+      if (!no_google) {
+        no_google = true;
+      } else {
+        std::cout << "--no-google supplied more than once. This is not needed"
+                  << std::endl;
       }
     } else if (std::string(argv[i]).compare("--ignore") == 0) {
       if (std::vector<std::string>(argv + 1, argv + argc).size() > i) {
@@ -178,23 +190,40 @@ int main(int argc, char *argv[]) {
 
   switch (cur_mode) {
   case MODE::SEARCH: {
-    auto res = gfonts.search(items);
+    std::vector<faf::font_props> res;
+    bool is_fs = false;
+    if (!no_google) {
+      res = gfonts.search(items);
+      if (res.empty()) {
+        res = fontsquirrel.search(items);
+        is_fs = true;
+      }
+    } else {
+      res = fontsquirrel.search(items);
+      is_fs = true;
+    }
     std::string cur_font_name;
     int i;
     bool has_italic = false;
     bool has_regular = false;
     for (const auto &font : res) {
       if (font.name != cur_font_name) {
-        std::cout << (cur_font_name.empty()
-                          ? ""
-                          : std::string("\nVariants:") +
-                                (has_regular ? has_italic ? " regular," : " regular"
-                                             : "") +
-                                (has_italic ? " italic" : "") + "\n\n")
-                  << "\033[92mFound:    " << font.name << "\033[0m"
-                  << "\nWeights:  "
-                  << (font.weight.find("italic") != std::string::npos ? "" : font.weight)
-                  << " ";
+        if (!is_fs) {
+          std::cout << (cur_font_name.empty()
+                            ? ""
+                            : std::string("\nVariants:") +
+                                  (has_regular ? has_italic ? " regular," : " regular"
+                                               : "") +
+                                  (has_italic ? " italic" : "") + "\n\n")
+                    << "\033[92mFound:    " << font.name << "\033[0m\n"
+                    << "\nWeights:  "
+                    << (font.weight.find("italic") != std::string::npos ? ""
+                                                                        : font.weight)
+                    << " ";
+        } else {
+          std::cout << (cur_font_name.empty() ? "" : "\n")
+                    << "\033[92mFound:    " << font.name << "\033[0m\n";
+        }
 
         has_regular = false;
         has_italic = false;
@@ -215,33 +244,48 @@ int main(int argc, char *argv[]) {
       }
       cur_font_name = font.name;
     }
-    std::cout << std::string("\nVariants:") +
-                     (has_regular ? has_italic ? " regular," : " regular" : "") +
-                     (has_italic ? " italic" : "")
-              << std::endl;
+    if (!is_fs) {
+      std::cout << std::string("\nVariants:") +
+                       (has_regular ? has_italic ? " regular," : " regular" : "") +
+                       (has_italic ? " italic" : "")
+                << std::endl;
+    }
 
     break;
   }
 
   case MODE::DOWNLOAD: {
-    auto res = gfonts.search(items);
+    bool is_fs = false;
+    std::vector<faf::font_props> res;
+    if (!no_google) {
+      res = gfonts.search(items);
+      if (res.empty()) {
+        res = fontsquirrel.search(items);
+        is_fs = true;
+      }
+    } else {
+      res = fontsquirrel.search(items);
+      is_fs = true;
+    }
     int dl = 0;
     for (const auto &font : res) {
-      if (ignore_regular && (font.weight != "bold" || !font.prop.ends_with("italic")) &&
-          font.prop == "regular") {
-        continue;
-      }
-      if (ignore_bold && font.weight == "bold") {
-        continue;
-      }
+      if (!is_fs) {
+        if (ignore_regular && (font.weight != "bold" || !font.prop.ends_with("italic")) &&
+            font.prop == "regular") {
+          continue;
+        }
+        if (ignore_bold && font.weight == "bold") {
+          continue;
+        }
 
-      if (ignore_italic && font.prop == "italic") {
-        continue;
-      }
+        if (ignore_italic && font.prop == "italic") {
+          continue;
+        }
 
-      if (font.weight != "regular" && font.weight != "bold" && font.prop != "italic" &&
-          !std::count(extra_weights.begin(), extra_weights.end(), font.weight)) {
-        continue;
+        if (font.weight != "regular" && font.weight != "bold" && font.prop != "italic" &&
+            !std::count(extra_weights.begin(), extra_weights.end(), font.weight)) {
+          continue;
+        }
       }
 
       if (!faf::Common::download_font(font, system_wide)) {
@@ -257,36 +301,38 @@ int main(int argc, char *argv[]) {
 
     break;
   }
-  
+
   case MODE::REMOVE: {
-      for (const auto &font : items) {
-        std::uintmax_t cnt;
+    for (const auto &font : items) {
+      std::uintmax_t cnt;
 
-        if (!ignore_regular && !ignore_italic && !ignore_bold) {
-          cnt = faf::Common::remove_font_family(font, system_wide); // remove everything
-        } else {
-          if (!ignore_regular) {
-            faf::Common::remove_single_font(font, "regular", system_wide);
-            cnt++;
-          }
-          if (!ignore_italic) {
-            faf::Common::remove_single_font(font, "italic", system_wide);
-            cnt++;
-          }
-          if (!ignore_bold) {
-            faf::Common::remove_single_font(font, "bold", system_wide);
-            cnt++;
-          }
+      if (!ignore_regular && !ignore_italic && !ignore_bold) {
+        cnt = faf::Common::remove_font_family(font, system_wide); // remove everything
+      } else {
+        if (!ignore_regular) {
+          faf::Common::remove_single_font(font, "regular", system_wide);
+          cnt++;
         }
-
-        if (cnt == 0) {
-          std::cout << "\033[91mError: could not remove font: '" << font << "'. (Probably because it doesn't exist)\n\033[0m";
-        } else {
-          std::cout << "Removed " << cnt << " fonts in family: '" << font << "'\n";;
+        if (!ignore_italic) {
+          faf::Common::remove_single_font(font, "italic", system_wide);
+          cnt++;
+        }
+        if (!ignore_bold) {
+          faf::Common::remove_single_font(font, "bold", system_wide);
+          cnt++;
         }
       }
-      break;
+
+      if (cnt == 0) {
+        std::cout << "\033[91mError: could not remove font: '" << font
+                  << "'. (Probably because it doesn't exist)\n\033[0m";
+      } else {
+        std::cout << "Removed " << cnt << " fonts in family: '" << font << "'\n";
+        ;
+      }
     }
+    break;
+  }
 
   case MODE::NONE:
     break;
