@@ -59,11 +59,13 @@ bool Common::download_font(font_props font, bool system_wide) {
   // Hide cursor
   indicators::show_console_cursor(false);
 
+  std::string append = font.prop.empty() ? "" : "-" + font.prop;
+
   indicators::ProgressBar progress_bar{
       indicators::option::BarWidth{30}, indicators::option::Start{" ["},
       indicators::option::Fill{"="}, indicators::option::Lead{"="},
       indicators::option::Remainder{"-"}, indicators::option::End{"]"},
-      indicators::option::PrefixText{font.name + "-" + font.prop + font.file_format},
+      indicators::option::PrefixText{font.name + append + font.file_format},
       // indicators::option::ForegroundColor{indicators::Color::yellow},
       indicators::option::ShowElapsedTime{true},
       indicators::option::ShowRemainingTime{true},
@@ -77,7 +79,7 @@ bool Common::download_font(font_props font, bool system_wide) {
   curl = curl_easy_init();
   if (curl) {
     fp = fopen(
-        (install_dir.string() + font.name + "-" + font.prop + font.file_format).c_str(),
+        (install_dir.string() + font.name + append + font.file_format).c_str(),
         "wb");
     curl_easy_setopt(curl, CURLOPT_URL, font.url.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
