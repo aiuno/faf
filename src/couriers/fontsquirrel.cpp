@@ -85,7 +85,6 @@ std::vector<font_props> FontSquirrel::search(std::vector<std::string> query) {
 
         font_props f;
         f.name = at;
-        f.prop = font["is_monospace"] == "N" ? "proportional" : "monospace";
         f.file_format = std::string(font["font_filename"]).substr(
             std::string(font["font_filename"]).find_last_of("."));
         f.url = "https://www.fontsquirrel.com/fonts/download/" + std::string(font["family_urlname"]);
