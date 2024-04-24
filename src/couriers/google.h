@@ -20,8 +20,7 @@ public:
 private:
   std::string api_key;
 
-  bool add_api_key(std::filesystem::path api_key_file);
-  bool check_api_key(std::filesystem::path api_key_file);
+  bool add_api_key(std::filesystem::path config_path);
 };
 
 } // namespace faf

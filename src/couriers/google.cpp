@@ -1,6 +1,7 @@
 #include "google.h"
 
 #include <chrono>
+#include <cstdio>
 #include <cstdlib>
 #include <curl/curl.h>
 #include <sys/types.h>
@@ -26,26 +27,28 @@ using json = nlohmann::json;
 Google::Google() {
   std::string homedir = Util::get_home_dir();
 
-  const std::filesystem::path gfonts_api_key_file(homedir +
-                                                  "/.config/faf/gfonts_api_key");
+  const std::filesystem::path config_path(homedir + "/.config/faf/config.json");
 
-  if (check_api_key(gfonts_api_key_file)) {
-    std::ifstream stream(gfonts_api_key_file.generic_string());
-    stream >> this->api_key;
+  json cfg;
+
+  if (std::filesystem::exists(config_path)) {
+    std::ifstream stream(config_path);
+    stream >> cfg;
   } else {
-    add_api_key(gfonts_api_key_file);
+    std::cerr << "Config file not found" << std::endl;
+    exit(1);
+  }
+
+  if (cfg.contains("google")) {
+    if (cfg["google"].contains("api_key") && !std::string(cfg["google"]["api_key"]).empty()) {
+      api_key = cfg["google"]["api_key"];
+    } else {
+      add_api_key(config_path);
+    }
   }
 }
 
-bool Google::check_api_key(std::filesystem::path api_key_file) {
-  if (!std::filesystem::exists(api_key_file)) {
-    return false;
-  }
-
-  return true;
-}
-
-bool Google::add_api_key(std::filesystem::path api_key_file) {
+bool Google::add_api_key(std::filesystem::path config_path) {
   std::string api_key_url =
       "https://developers.google.com/fonts/docs/developer_api#APIKey";
 
@@ -56,16 +59,22 @@ bool Google::add_api_key(std::filesystem::path api_key_file) {
   std::string key;
   std::cin >> key;
 
-  std::ofstream stream(api_key_file.generic_string());
+  json cfg;
 
-  if (!stream.good()) {
-    std::cout << "File I/O error\n";
-    return false;
+  if (std::filesystem::exists(config_path)) {
+    std::ifstream stream(config_path);
+    stream >> cfg;
+  } else {
+    std::cerr << "Config file not found" << std::endl;
+    exit(1);
   }
 
-  stream << key;
+  cfg["google"]["api_key"] = key;
 
-  std::cout << "Key added" << std::endl;
+  std::ofstream stream(config_path);
+  stream << cfg.dump(2);
+
+  api_key = key;
 
   return true;
 }
@@ -133,7 +142,7 @@ std::vector<font_props> Google::search(std::vector<std::string> query) {
 
       std::transform(at.begin(), at.end(), at.begin(),
                      [](unsigned char c) { return std::tolower(c); });
-      
+
       // FIXME: in the case of roboto-flex where there are no special weights
       //        and only regular variant. The parser fails and shows "regular"
       //        as a weight

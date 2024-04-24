@@ -5,6 +5,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -13,6 +14,8 @@
 #include "couriers/fontsquirrel.h"
 #include "couriers/google.h"
 #include "util.h"
+
+#include "external/nlohmann/json.hpp"
 
 enum class MODE { DOWNLOAD, REMOVE, SEARCH, NONE };
 
@@ -24,6 +27,7 @@ void print_usage() {
             << "    faf -R [fonts]                   Remove installed font(s)\n"
             << "    faf -Q [fonts]                   Search for font(s)\n"
             << "\noptions:\n"
+            << "    -h                               Show this help\n"
             << "    -ng --no-google                  Do not use Google Fonts\n"
             << "    --system                         Install fonts for all users\n"
             << "    --ignore <variant>(,variant)     Ignore a font variant\n"
@@ -43,6 +47,8 @@ void print_usage() {
             << "        bold" << std::endl;
 }
 
+using json = nlohmann::json;
+
 int main(int argc, char *argv[]) {
   std::string homedir = faf::Util::get_home_dir();
 
@@ -52,14 +58,29 @@ int main(int argc, char *argv[]) {
     std::filesystem::create_directory(faf_cfg_dir);
   }
 
-  // TODO: config file
+  auto cfg_file = faf_cfg_dir / "config.json";
+  json cfg;
+
+  if (!std::filesystem::exists(cfg_file)) {
+    std::ofstream ofs(cfg_file);
+    ofs << "{\n"
+           "  \"google\": {\n"
+           "    \"enabled\": true,\n"
+           "    \"api_key\": \"\"\n"
+           "  }\n"
+           "}\n";
+    ofs.close();
+  } else {
+    std::ifstream ifs(cfg_file);
+    ifs >> cfg;
+    ifs.close();
+  }
 
   int mode_supplied = 0;
   MODE cur_mode = MODE::NONE;
 
   std::vector<std::string> items;
 
-  // TODO: https://www.fontsquirrel.com/blog/2010/12/the-font-squirrel-api
   // TODO: if (config.google.enabled)
   faf::Google gfonts;
   faf::FontSquirrel fontsquirrel;
@@ -69,6 +90,10 @@ int main(int argc, char *argv[]) {
   bool ignore_italic = false;
   bool ignore_regular = false;
   bool ignore_bold = false;
+
+  if (!cfg["google"]["enabled"]) {
+    no_google = true;
+  }
 
   std::vector<std::string> extra_weights;
 
@@ -95,17 +120,10 @@ int main(int argc, char *argv[]) {
         if (!system_wide) {
           system_wide = true;
         }
-      } else {
-        std::cout << "--system supplied more than once. This is not needed" << std::endl;
       }
     } else if (std::string(argv[i]).compare("--no-google") == 0 ||
                std::string(argv[i]).compare("-ng") == 0) {
-      if (!no_google) {
-        no_google = true;
-      } else {
-        std::cout << "--no-google supplied more than once. This is not needed"
-                  << std::endl;
-      }
+      no_google = true;
     } else if (std::string(argv[i]).compare("--ignore") == 0) {
       if (std::vector<std::string>(argv + 1, argv + argc).size() > i) {
         size_t pos = 0;
